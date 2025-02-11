@@ -7,46 +7,33 @@
       
 """
 
-__author__ = "Julio Waissman"
-__date__ = "enero 2025"
+__author__ = "Ana Sofía Matti Ríos y Jesus David Ayala Morales"
+__date__ = "Febrero 2025"
 
 
 import math
+import random 
 from collections import Counter
+
 
 def entrena_arbol(datos, target, clase_default, 
                   max_profundidad=None, acc_nodo=1.0, min_ejemplos=0,
                   variables_seleccionadas=None):
-    """
-    Entrena un árbol de desición utilizando el criterio de entropía
     
-    Parámetros: 
-    -----------
-    datos: list(dict)
-        Una lista de diccionarios donde cada diccionario representa una instancia. 
-        Cada diccionario tiene al menos un par llave-valor, donde la llave es el nombre de un atributo y el valor es el valor del atributo.
-        Todos los diccionarios tienen la misma llave-valor. 
-    target: str
-        El nombre del atributo que se quiere predecir
-    clase_default: str
-        El valor de la clase por default
-    max_profundidad: int
-        La máxima profundidad del árbol. Si es None, no hay límite de profundidad
-    acc_nodo: int
-        El porcentaje de acierto mínimo para considerar un nodo como hoja
-    min_ejemplos: int
-        El número mínimo de ejemplos para considerar un nodo como hoja
-    variables_seleccionadas: list(str)
-        Lista de variables a considerar. Si es None, se consideran todas las variables, esto apica para árboles aleagtorios y lo tendrán que implementar en la tarea.
-        
-    Regresa:
-    --------
-    nodo: Nodo
-        El nodo raíz del árbol de desición
-    
-    """
     atributos = list(datos[0].keys())
     atributos.remove(target)
+    if isinstance(variables_seleccionadas, int) and variables_seleccionadas > 0:
+        #aquí creamos una nueva variable para almacenar una lista aleatoria de atributos 
+        atributos_seleccionados = random.sample(atributos, min(variables_seleccionadas, len(atributos)))
+    else:
+        atributos_seleccionados = atributos
+        
+        
+    variable, valor = selecciona_variable_valor(datos, target, atributos_seleccionados)
+
+
+    #atributos = list(datos[0].keys())
+    #atributos.remove(target)
         
     # Criterios para deterinar si es un nodo hoja
     if  len(datos) == 0 or len(atributos) == 0:
@@ -75,38 +62,18 @@ def entrena_arbol(datos, target, clase_default,
         target,
         clase_default,
         max_profundidad - 1 if max_profundidad is not None else None,
-        acc_nodo, min_ejemplos, variables_seleccionadas
+        acc_nodo, min_ejemplos, None
     )   
     nodo.hijo_mayor = entrena_arbol(
         [d for d in datos if d[variable] >= valor],
         target,
         clase_default,
         max_profundidad - 1 if max_profundidad is not None else None,
-        acc_nodo, min_ejemplos, variables_seleccionadas
+        acc_nodo, min_ejemplos, None
     )   
     return nodo
 
 def selecciona_variable_valor(datos, target, atributos):
-    """
-    Selecciona el atributo y el valor que mejor separa las clases
-    
-    Parámetros:
-    -----------
-    datos: list(dict)
-        Una lista de diccionarios donde cada diccionario representa una instancia.
-        Cada diccionario tiene al menos un par llave-valor, donde la llave es el nombre de un atributo y el valor es el valor del atributo. Todos los diccionarios tienen la misma llave-valor.
-    target: str
-        El nombre del atributo que se quiere predecir
-    atributos: list(str)
-        La lista de atributos a considerar
-        
-    Regresa:
-    --------
-    atributo: str
-        El nombre del atributo que mejor separa las clases
-    valor: float
-        El valor del atributo que mejor separa las clases
-    """
     
     entropia = entropia_clase(datos, target)
     mejor = max(
@@ -117,22 +84,6 @@ def selecciona_variable_valor(datos, target, atributos):
     return mejor[0], mejor[1][0]
     
 def entropia_clase(datos, target):
-    """
-    Calcula la entropía de la clase
-    
-    Parámetros:
-    -----------
-    datos: list(dict)
-        Una lista de diccionarios donde cada diccionario representa una instancia. 
-        Cada diccionario tiene al menos un par llave-valor, donde la llave es el nombre de un atributo y el valor es el valor del atributo. Todos los diccionarios tienen la misma llave-valor. 
-    target: str
-        El nombre del atributo que se quiere predecir
-        
-    Regresa:
-    --------
-    entropia: float
-        La entropía de la clase
-    """ 
       
     clases = Counter(d[target] for d in datos)
     total = sum(clases.values())
